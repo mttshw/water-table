@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <link href="../css/normalise.css" rel="stylesheet"/>
+    <link href="../css/styles.css" rel="stylesheet"/>
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900italic,900' rel='stylesheet' type='text/css'>
+    <link href="https://tiles.locationiq.com/v3/libs/leaflet/1.8.0/leaflet.css" rel="stylesheet" type="text/css" />
+    <title>Water Table</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  </head>
+
+  <body>
+    <wt-table-view></wt-table-view>
+    <wt-pagination per-page="100" current-page="1" pages-to-show="7"></wt-pagination>
+  </body>
+  <script src="js/components/table-view-component.js" type="module"></script>
+  <script src="js/components/pagination-component.js" type="module"></script>
+  <script src="js/polyfills/popover.min.js" type="module"></script>
+</html>
