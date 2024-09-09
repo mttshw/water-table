@@ -1,0 +1,21 @@
+:root {
+    --primary: #408044;
+    --gray: #eee;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+wt-pagination {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.pageSelector {
+    margin: 0 10px;
+}
+.pageSelector label {
+    margin-right: 5px;
+}

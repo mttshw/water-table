@@ -2,7 +2,9 @@ import { UpdatePaginationEvent } from "../events.js";
 
 const styles = new CSSStyleSheet()
 styles.replaceSync(`
-
+    [part=pagination] {
+        display: flex;
+    }
 `);
 
 document.adoptedStyleSheets = [styles];
@@ -30,18 +32,20 @@ export class Pagination extends HTMLElement {
         });
     }
 
-    startPage = 0
-
     makeButtons(numPages) {
         if( numPages > 1 ) {
+            const select = document.createElement('select');
+
             const prevButton = document.createElement('button');
             prevButton.textContent = 'Prev';
             this.append(prevButton);
+
 
             prevButton.addEventListener('click', ()=> {
                 const currentPage = parseInt(this.getAttribute('current-page'));
                 this.setAttribute('current-page', currentPage-1);
                 document.dispatchEvent(new UpdatePaginationEvent(currentPage-2));  
+                select.value = currentPage-2;
             });
 
             const pageSelector = document.createElement('div');
@@ -51,7 +55,6 @@ export class Pagination extends HTMLElement {
             label.textContent = "Page";
             pageSelector.append(label);
 
-            const select = document.createElement('select');
             for (let i = 0; i < numPages; i++) {
                 const option = document.createElement('option');
                 option.textContent = i+1;
@@ -67,20 +70,6 @@ export class Pagination extends HTMLElement {
             pageSelector.append(select);
             this.append(pageSelector);
 
-            // let pages = numPages; 
-            // if( numPages > this.pagesToShow ) pages = this.pagesToShow;
-
-            // for (let i = 0; i < pages; i++) {
-            //     const button = document.createElement('button');
-            //     button.textContent = i+1;
-            //     this.append(button);
-
-            //     button.addEventListener('click', ()=>{
-            //         this.setAttribute('current-page', i+1);
-            //         document.dispatchEvent(new UpdatePaginationEvent(i));  
-            //     })
-            // } 
-
             const nextButton = document.createElement('button');
             nextButton.textContent = 'Next';
             this.append(nextButton);
@@ -89,6 +78,7 @@ export class Pagination extends HTMLElement {
                 const currentPage = parseInt(this.getAttribute('current-page'));
                 this.setAttribute('current-page', currentPage+1);
                 document.dispatchEvent(new UpdatePaginationEvent(currentPage));  
+                select.value = currentPage;
             });
         }
     }
