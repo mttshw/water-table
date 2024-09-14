@@ -1,32 +1,60 @@
 import { TableDataLoadedEvent } from "../events.js";
 import { getTableData } from "../functions.js";
+import { ItemCard } from "./item-card.js";
+import { Pagination } from "./pagination-component.js";
 
 const styles = new CSSStyleSheet()
 styles.replaceSync(`
+    [part="wrapper"] {
+        overflow: scroll;
+    }
     table {
-        max-width: 100%;
-        border-spacing:0; 
         border-collapse: collapse;
+        width: max(65rem, 100%);
+        table-layout: fixed;
+    }
+    thead th:not(:first-child),
+    td {
+        text-align: end;
+    }
+    
+    td, th {
+        padding: 0.25rem 0.75rem;
+        width: 6rem;
     }
     th {
-        text-align: left;
-        border-bottom: 1px solid #000;
-        text-transform: uppercase;
-        font-weight: 200;
-        font-size: 0.8rem;
-        padding: 1vw;
+        background: rgb(217, 237, 255);
+        border-color: rgb(217, 237, 255);
     }
-    td {
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        word-wrap: break-word;
-        padding: 1vw;
+    th:first-child,
+    td:first-child {
+        position: sticky;
+        inset-inline-start: 0;
+        border-inline-end: none;
+        width: 5rem;
     }
-    tr:nth-child(odd) {
-        background: rgb(242, 245, 255);
+    th:first-child {
+        background: rgb(217, 237, 255);
     }
-    tr:nth-child(even) {
-        background: rgb(229, 235, 255);
+    td:first-child {
+        background: #fff;
+    }
+
+
+    td:first-of-type,
+    th:first-of-type {
+        border-inline-start: none;
+    }
+
+    th:first-child::after,
+    td:first-child::after {
+        content: '';
+        position: absolute;
+        inset-block-start: 0;
+        inset-inline-end: 0;
+        width: 1px;
+        height: 100%;
+        background: lightgrey;
     }
 
     .id span, 
@@ -44,14 +72,21 @@ document.adoptedStyleSheets = [styles];
 
 const template = document.createElement("template");
 template.innerHTML = `
-    <table>
-        <thead>
-            <tr part="tableHeadings"></tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    <slot>d</slot>
+    <div part="wrapper">
+        <div part="filter">
+            <div part="search">
+                <label part="item-label">Search</label>
+                <input part="text-input" type="text" />
+            </div>
+            <div part="sort">
+                <label part="item-label">Sort by</label>
+                <select>
+                    <option>Order by...</option>
+                </select>
+            </div>
+        </div>
+        <slot></slot>
+    </div>
 `;
 
 export class TableView extends HTMLElement {
@@ -64,105 +99,100 @@ export class TableView extends HTMLElement {
     tableHeadings = [];
 
     tableData = [];
-    perPage = 0
+    searchData = [];
+    
+    perPage = 20;
+
+
 
     connectedCallback() {
         this.shadowRoot.adoptedStyleSheets = [styles];
         this.shadowRoot.replaceChildren(template.content.cloneNode(true));
-        this.shadowRoot.is
-
-        this.perPage = document.querySelector('wt-pagination').getAttribute('per-page');
-
         
         this.getData();
 
         document.addEventListener('update-pagination-event', (e) => {
-
-            this.makeTable(this.sliceForPagination(this.tableData, e.page));
+            this.makeTable(this.sliceForPagination(this.searchData, e.page-1), e.page);
         });
 
+        const searchBox = this.shadowRoot.querySelector('[part="search"] input');
+        searchBox.addEventListener('keyup', (e)=>{
+            this.search(searchBox.value, this.tableData);
+        });
     }
 
     async getData() {
         const data = await getTableData(); 
         
         this.tableData = data;
-        // console.log(data);
-        // console.log(this.tableData);
+        this.searchData = data;
         document.dispatchEvent(new TableDataLoadedEvent(data.length));
-        this.makeTable(this.sliceForPagination(data, 0));
+        this.makeTable(this.sliceForPagination(data, 0), 1, true);
     }
 
     sliceForPagination(input, page) {
-        console.log( page*this.perPage , (page+1)*this.perPage );
         return input.slice(page*this.perPage, (page+1)*this.perPage);
     }
 
-    makeTable(data) {
-        const tbody = this.shadowRoot.querySelector('tbody');
-        tbody.innerHTML = '';
-        data.forEach(row => {
-            const tr = document.createElement('tr');
-
-
-            for (let item in row) {
-                
-                    this.checkTableHeadings(item);
-                    this.addCell(row[item], tr, item);
-                    
-                
-            }
-
-            tbody.append(tr);
-
+    makeFilter(row) {
+        const keys = Object.keys(row);
+        const select = this.shadowRoot.querySelector('[part="filter"] select');
+        
+        keys.forEach(key => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = this.formatFilter(key);
+            select.append(option);
+        })
+        select.addEventListener('change', (e)=>{
+            this.sort(e.target.value);
         });
     }
 
-    addCell(item, tr, className = 'cell') {
-        const td = document.createElement('td');
-        const span = document.createElement('span');
-        td.classList.add(className)
-        span.textContent = item;
-        td.append(span);
-        tr.append(td);
-    }
+    search(searchTerm) {
 
-    checkTableHeadings(heading) {
-        if(!this.tableHeadings.includes(heading)) {
-            this.tableHeadings.push(heading);
-            const th = document.createElement('th');
-            th.setAttribute('sort', heading);
-            th.addEventListener('click', (e)=>{
-                this.sort(heading)
-            }, false);
-            th.textContent = this.formatHeading(heading);
-
-            this.shadowRoot.querySelector('[part="tableHeadings"]').append(th);
+        var results = [];
+        for(var i=0; i<this.tableData.length; i++) {
+            for(var key in this.tableData[i]) {
+                if(this.tableData[i][key].toString().indexOf(searchTerm)!=-1) {
+                    results.push(this.tableData[i]);
+                }
+            }
         }
+        // return results;
+        this.searchData = results;
+        this.makeTable(this.sliceForPagination(results, 0), 1);
     }
 
-    formatHeading(heading) {
+    makeTable(data, page, makeFilter = false) {
+        this.innerHTML = '';
+        
+        data.forEach((row, index) => {
+            if( index == 0 && makeFilter ) this.makeFilter(row);
+            this.append(new ItemCard(row));
+        });
+        const pagination = new Pagination(this.searchData.length, page, this.perPage);
+        this.append(pagination);
+    }
+
+    formatFilter(heading) {
         const result = heading.replace(/([A-Z])/g, " $1");
         const finalResult = result.charAt(0).toUpperCase() + result.slice(1);
         return(finalResult);
     }
 
     sort(name) {
-        const tbody = this.shadowRoot.querySelector('tbody');
-        tbody.innerHTML = '';
-
-        console.log('sort by',name);
-
         if(this.sortCol && this.sortCol === name) this.sortAsc = !this.sortAsc;
         this.sortCol = name;
-        this.tableData.sort((a, b) => {
+        this.searchData.sort((a, b) => {
             if(a[this.sortCol] < b[this.sortCol]) return this.sortAsc?1:-1;
             if(a[this.sortCol] > b[this.sortCol]) return this.sortAsc?-1:1;
             return 0;
         });
 
-        const data = this.tableData.slice(0, this.perPage);
-        this.makeTable(data, tbody);
+        const data = this.searchData.slice(0, this.perPage);
+        document.dispatchEvent(new TableDataLoadedEvent(data.length));
+        this.makeTable(data, 1);
     }
     
     

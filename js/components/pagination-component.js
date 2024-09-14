@@ -1,14 +1,5 @@
 import { UpdatePaginationEvent } from "../events.js";
 
-const styles = new CSSStyleSheet()
-styles.replaceSync(`
-    [part=pagination] {
-        display: flex;
-    }
-`);
-
-document.adoptedStyleSheets = [styles];
-
 const template = document.createElement("template");
 template.innerHTML = `
     <div part="pagination">
@@ -23,29 +14,37 @@ export class Pagination extends HTMLElement {
 
     shadowRoot = this.attachShadow({ mode: "open" });
 
+    constructor(dataLength, currentPage, perPage) {
+        super();
+        this.dataLength = dataLength;
+        this.currentPage = currentPage;
+        this.perPage = perPage;
+    }
+
+    numPages = 0;
+
     connectedCallback() {
-        this.shadowRoot.adoptedStyleSheets = [styles];
         this.shadowRoot.replaceChildren(template.content.cloneNode(true));
 
-        document.addEventListener('table-data-loaded-event', (e) => {
-            this.makeButtons(e.dataLength / this.perPage);
-        });
+        this.numPages = this.dataLength / this.perPage;
+        this.makeButtons(this.numPages);
+        
     }
 
     makeButtons(numPages) {
+        
         if( numPages > 1 ) {
+
             const select = document.createElement('select');
 
             const prevButton = document.createElement('button');
+            prevButton.classList.add('prevBtn');
             prevButton.textContent = 'Prev';
             this.append(prevButton);
 
 
             prevButton.addEventListener('click', ()=> {
-                const currentPage = parseInt(this.getAttribute('current-page'));
-                this.setAttribute('current-page', currentPage-1);
-                document.dispatchEvent(new UpdatePaginationEvent(currentPage-2));  
-                select.value = currentPage-2;
+                document.dispatchEvent(new UpdatePaginationEvent(this.currentPage-1));  
             });
 
             const pageSelector = document.createElement('div');
@@ -58,12 +57,13 @@ export class Pagination extends HTMLElement {
             for (let i = 0; i < numPages; i++) {
                 const option = document.createElement('option');
                 option.textContent = i+1;
-                option.value = i;
+                option.value = i+1;
                 select.append(option);
             } 
 
+            select.value = this.currentPage;
+
             select.addEventListener('change', ()=>{
-                this.setAttribute('current-page', parseInt(select.value)+1);
                 document.dispatchEvent(new UpdatePaginationEvent(parseInt(select.value)));  
             })
 
@@ -71,44 +71,34 @@ export class Pagination extends HTMLElement {
             this.append(pageSelector);
 
             const nextButton = document.createElement('button');
+            nextButton.classList.add('nextBtn');
             nextButton.textContent = 'Next';
             this.append(nextButton);
 
             nextButton.addEventListener('click', ()=> {
-                const currentPage = parseInt(this.getAttribute('current-page'));
-                this.setAttribute('current-page', currentPage+1);
-                document.dispatchEvent(new UpdatePaginationEvent(currentPage));  
-                select.value = currentPage;
+                document.dispatchEvent(new UpdatePaginationEvent(this.currentPage+1));  
             });
+
+            this.disableButtons();
         }
     }
-    
 
-    get pagesToShow() {
-        const pagesToShow = this.getAttribute("pages-to-show");
-        return parseInt(pagesToShow);
-    }
+    disableButtons() {
+        const prevBtn = document.querySelector('.prevBtn')
+        const nextBtn = document.querySelector('.nextBtn')
+        if( this.currentPage == 1 ) {
+            prevBtn.setAttribute('disabled', '');
+        } else {
+            prevBtn.removeAttribute('disabled');
+        }
 
-    set pagesToShow(value) {
-        this.setAttribute("pages-to-show", value);
-    }
-
-    get currentPage() {
-        const currentPage = this.getAttribute("current-page");
-        return currentPage;
-    }
-
-    set currentPage(value) {
-        this.setAttribute("current-page", value);
+        if( this.currentPage == this.numPages ) {
+            nextBtn.setAttribute('disabled', '');
+        } else {
+            nextBtn.removeAttribute('disabled');
+        }
     }
 
-    get perPage() {
-        const perPage = this.getAttribute("per-page");
-        return perPage;
-    }
-  
-    set perPage(value) {
-        this.setAttribute("per-page", value);
-    }
+   
 }
 Pagination.define()
