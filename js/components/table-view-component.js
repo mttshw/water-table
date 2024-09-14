@@ -3,72 +3,7 @@ import { getTableData } from "../functions.js";
 import { ItemCard } from "./item-card.js";
 import { Pagination } from "./pagination-component.js";
 
-const styles = new CSSStyleSheet()
-styles.replaceSync(`
-    [part="wrapper"] {
-        overflow: scroll;
-    }
-    table {
-        border-collapse: collapse;
-        width: max(65rem, 100%);
-        table-layout: fixed;
-    }
-    thead th:not(:first-child),
-    td {
-        text-align: end;
-    }
-    
-    td, th {
-        padding: 0.25rem 0.75rem;
-        width: 6rem;
-    }
-    th {
-        background: rgb(217, 237, 255);
-        border-color: rgb(217, 237, 255);
-    }
-    th:first-child,
-    td:first-child {
-        position: sticky;
-        inset-inline-start: 0;
-        border-inline-end: none;
-        width: 5rem;
-    }
-    th:first-child {
-        background: rgb(217, 237, 255);
-    }
-    td:first-child {
-        background: #fff;
-    }
 
-
-    td:first-of-type,
-    th:first-of-type {
-        border-inline-start: none;
-    }
-
-    th:first-child::after,
-    td:first-child::after {
-        content: '';
-        position: absolute;
-        inset-block-start: 0;
-        inset-inline-end: 0;
-        width: 1px;
-        height: 100%;
-        background: lightgrey;
-    }
-
-    .id span, 
-    .sensorId span {
-        font-family: monospace;
-        font-size: 0.8rem;
-        background: var(--gray);
-        padding: 4px;
-        display: inline-block;
-        word-break: break-all;
-    }
-`);
-
-document.adoptedStyleSheets = [styles];
 
 const template = document.createElement("template");
 template.innerHTML = `
@@ -106,7 +41,6 @@ export class TableView extends HTMLElement {
 
 
     connectedCallback() {
-        this.shadowRoot.adoptedStyleSheets = [styles];
         this.shadowRoot.replaceChildren(template.content.cloneNode(true));
         
         this.getData();

@@ -28,7 +28,7 @@ template.innerHTML = `
             </p>
             <p part="item-sensor">
                 <label part="item-label">Sensor ID</label>
-                <span></span>
+                <span part="sensor-content"></span>
             </p>
         </div>
         <div part="sensor-data">
@@ -93,7 +93,7 @@ export class ItemCard extends HTMLElement {
         this.shadowRoot.querySelector('[part=item-lng]').textContent = this.item.longitude;
         this.shadowRoot.querySelector('[part=item-direction] span').textContent = this.item.direction;
         this.shadowRoot.querySelector('[part=item-date] span').textContent = this.item.transmittedAt.toLocaleString("en-UK", {});
-        this.shadowRoot.querySelector('[part=item-sensor] span').textContent = this.item.sensorId;
+        this.shadowRoot.querySelector('[part=item-sensor] [part="sensor-content"]').textContent = this.item.sensorId;
         this.shadowRoot.querySelector('[part=item-alarm] [part=item-content]').textContent = this.item.alarm;
         this.shadowRoot.querySelector('[part=item-battery] [part=item-content]').innerHTML = this.splitUnit(this.item.battery);
         this.shadowRoot.querySelector('[part=item-height] [part=item-content]').innerHTML = this.splitUnit(this.item.height);
@@ -106,7 +106,6 @@ export class ItemCard extends HTMLElement {
     splitUnit(input) {
         const number = input.match(/\d+([\.]\d+)?/g);
         const unit = input.split(number)[1];
-        
         const unitHtml = `<span part="content">${number}</span><span part="unit">${unit}</span>`;
         return unitHtml;
     }

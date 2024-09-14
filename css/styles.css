@@ -104,6 +104,18 @@ body {
     display: flex;
     justify-content: space-between;
 }
+::part(item-latlng),
+::part(item-direction),
+::part(item-date),
+::part(item-sensor) {
+    margin: 1rem 0.2rem;
+}
+::part(item-latlng) {
+    margin-left: 0;
+}
+::part(item-sensor) {
+    margin-right: 0;
+}
 ::part(item-battery),
 ::part(item-alarm),
 ::part(item-height),
@@ -148,4 +160,59 @@ body {
     margin: 0 auto 0;
     flex: 1;
 }
-wt-pagination::after{content: ''; flex: 1}
+
+
+@media(max-width: 650px) {
+    ::part(filter) {
+        flex-direction: column;
+    }
+    ::part(search) {
+        margin-bottom: 0.3rem;
+    }
+    ::part(item-details) {
+        flex-direction: column;
+        margin: 1rem 0;
+    }
+
+    ::part(item-sensor) {
+        grid-column-start: 1;
+        grid-column-end: 3;
+    }
+
+    ::part(item-latlng),
+    ::part(item-direction),
+    ::part(item-date),
+    ::part(item-sensor) {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        margin: 0.3rem 0;
+        font-size: 0.8rem;
+    }
+
+    ::part(item-label) {
+        margin-right: auto;
+        margin-bottom: 0;
+    }
+    ::part(sensor-data) {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        padding: 0.2rem 0.5rem;
+    }
+
+    ::part(item-battery), 
+    ::part(item-alarm), 
+    ::part(item-height), 
+    ::part(item-oxygen), 
+    ::part(item-speed), 
+    ::part(item-state), 
+    ::part(item-temperature) {
+        grid-template-columns: 25% 75%;
+        font-size: 0.8rem;
+    }
+
+    ::part(sensor-content) {
+        white-space: wrap;
+        text-align: right;
+    }
+}
