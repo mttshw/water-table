@@ -104,6 +104,32 @@ body {
     display: flex;
     justify-content: space-between;
 }
+::part(item-battery),
+::part(item-alarm),
+::part(item-height),
+::part(item-oxygen),
+::part(item-speed),
+::part(item-state),
+::part(item-temperature) {
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+::part(item-icon) {
+    grid-row-start: 1;
+    grid-row-end: span 2;
+    display: flex;
+    align-items: center;
+    margin-right: 5px;
+}
+::part(item-content) {
+    position: relative;
+    display: flex;
+}
+::part(unit) {
+    font-size: 0.5rem;
+    display: inline-block;
+    white-space: nowrap;
+}
 
 ::part(filter) {
     display: flex;
